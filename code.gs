@@ -1,5 +1,10 @@
 // This calls the Coinbase API too frequently. I should store the values in a hidden VARIABLES sheet with timestamp. Call if older than 60 seconds or so. Allow users to customize the refresh time.
 
+
+// ------
+// CONSTANTS
+// ------
+
 SS = SpreadsheetApp.getActiveSpreadsheet();
 SHEET = SS.getActiveSheet();
 
@@ -36,7 +41,6 @@ function getPrices(currency) {
 
 // Returns a 1-dimensional array with the currency name, it's sell price, and it's buy price. 
 function priceRow(crypto, currency) {
-  // Removed passing cells as arguments and then setting prices directly into them. Instead returns an array which can be set on the sheet.
   var buy_price = getPrice(crypto, "buy", currency);
   var sell_price = getPrice(crypto, "sell", currency);
   var arr = [NAMES[crypto], sell_price, buy_price];
@@ -61,8 +65,8 @@ function getPrice(crypto, type, currency) {
 
 // Fetches the given Coinbase API URL, parses the response and returns it. 
 function getFromApi(url) {
-  var response = UrlFetchApp.fetch(url)
-  var data = JSON.parse(response)
+  var response = UrlFetchApp.fetch(url);
+  var data = JSON.parse(response);
   var price = data.data.amount;
   return price;
 }
@@ -87,39 +91,26 @@ function getSymbol(crypto) {
 
 // Edit the cell addresses below, function will return cryptocurrency buy/sell prices to the specified cells.
 function coinbase() {
+  
+  var currency = "SGD";
 
   var btc_sell_price_cell = 'A3'
   var btc_buy_price_cell = 'A4'
-
   var eth_sell_price_cell = 'A5'
   var eth_buy_price_cell = 'A6'
-
   var ltc_sell_price_cell = 'A7'
   var ltc_buy_price_cell = 'A8'
 
-  price("BTC", btc_sell_price_cell, btc_buy_price_cell)
-  price("ETH", eth_sell_price_cell, eth_buy_price_cell)
-  price("LTC", ltc_sell_price_cell, ltc_buy_price_cell)
+  price("BTC", btc_sell_price_cell, btc_buy_price_cell, currency)
+  price("ETH", eth_sell_price_cell, eth_buy_price_cell, currency)
+  price("LTC", ltc_sell_price_cell, ltc_buy_price_cell, currency)
 }
 
 // Fetches a crypto price and sets it's buy and sell values in the given cells.
-function price(crypto, sell_cell, buy_cell) {
-  var sell_url = "https://api.coinbase.com/v2/prices/" + crypto + "-SGD/sell"
-  var buy_url  = "https://api.coinbase.com/v2/prices/" + crypto + "-SGD/buy"
+function price(crypto, sell_cell, buy_cell, currency) {
+  var sell_price = getPrice(crypto, "sell", currency);
+  var buy_price = getPrice(crypto, "buy", currency);
 
-  var response = UrlFetchApp.fetch(sell_url)
-  var data = JSON.parse(response)
-
-  var sell_price = data.data.amount
-
-  response = UrlFetchApp.fetch(buy_url)
-  data = JSON.parse(response)
-
-  var buy_price = data.data.amount
-
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-
-  sheet.getRange(sell_cell).setValue(sell_price)
-  sheet.getRange(buy_cell).setValue(buy_price)
+  SHEET.getRange(sell_cell).setValue(sell_price)
+  SHEET.getRange(buy_cell).setValue(buy_price)
 }
-
